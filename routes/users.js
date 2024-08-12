@@ -7,6 +7,10 @@ const { loginSubmit, getPath } = require('../until/user')
 
 const crypto = require('crypto');
 
+const bcrypt = require('bcrypt');
+const { secretKey, resetTokenSecretKey } = require('./config')
+const jwt = require('jsonwebtoken');
+
 // var serverAddress = 'http://stage.ezkit.net:12180'
 // http://server/?user/index/loginSubmit&name=[用户名]&password=[密码]
 // http://stage.ezkit.net:12180/
@@ -49,43 +53,60 @@ router.get('/', function(req, res, next) {
 //   })
 // })
 
-router.get('/getUserList', (req, res, next) => {
-  db.query('SELECT * FROM `users`', (err, result) => {
-    if (err) return err.message
-    res.send(result)
-  })
-})
+// 登录路由
+router.post('/login', (req, res) => {
+  const { username, password } = req.body;
 
-router.post('/login', async(req,res,next) => {
-  db.query(`SELECT * FROM users WHERE user_name = '${req.body.name}' AND user_password = '${req.body.password}'`, (err,result) => {
-    if (err) throw err
-    console.log(result)
-    if (result.length === 0) {
-      res.send({
-        data: result,
-        msg: '用户不存在或密码错误'
-      })
-      return
+  // 检查用户是否存在
+  const query = 'SELECT * FROM users WHERE username = ?';
+  db.query(query, [username], async (err, results) => {
+    if (err) {
+      // return res.status(500).json({ message: 'Database error' });
+      return res.error('Database error', 500);
     }
-    res.cookie('token', crypto.randomBytes(32).toString('hex'))
-    res.send({
-      data: result
-    })
-  })
-})
 
+    if (results.length === 0) {
+      // return res.status(401).json({ message: 'User not found' });
+      return res.error('User not found', 401);
+    }
+
+    const user = results[0];
+
+    // 验证密码
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      // return res.status(401).json({ message: 'Incorrect password' });
+      return res.error('Incorrect password', 401);
+    }
+
+    // 生成JWT Token，设置过期时间为1小时
+    const token = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: '6h' });
+
+    // 返回用户信息和令牌
+    const userData = {
+      id: user.id,
+      username: user.username
+    };
+    // res.json({ message: 'Login successful', token });
+    res.success({ user: userData, token: token });
+  });
+});
+
+// 注册
 router.post('/regist', async(req, res) => {
-  const { name, password } = req.body
+  const { username, password } = req.body;
 
   // 检查用户是否已存在
-  const checkUserQuery = 'SELECT * FROM users WHERE user_name = ?';
-  db.query(checkUserQuery, [name], async (err, results) => {
+  const checkUserQuery = 'SELECT * FROM users WHERE username = ?';
+  db.query(checkUserQuery, [username], async (err, results) => {
     if (err) {
-      return res.status(500).json({ message: 'Database error' });
+      // return res.status(500).json({ message: 'Database error' });
+      return res.error('Database error', 500)
     }
 
     if (results.length > 0) {
-      return res.status(409).json({ message: 'User already exists' });
+      // return res.status(409).json({ message: 'User already exists' });
+      return res.error('User already exists', 409)
     }
 
     // 加密密码
@@ -93,13 +114,163 @@ router.post('/regist', async(req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // 插入新用户
-    const insertUserQuery = 'INSERT INTO users (name, password) VALUES (?, ?)';
-    db.query(insertUserQuery, [name, hashedPassword], (err, results) => {
+    const insertUserQuery = 'INSERT INTO users (username, password) VALUES (?, ?)';
+    db.query(insertUserQuery, [username, hashedPassword], (err, results) => {
       if (err) {
-        return res.status(500).json({ message: 'Database error' });
+        // return res.status(500).json({ message: 'Database error' });
+        return res.error('Database error', 500)
       }
 
-      res.status(201).json({ message: 'User registered successfully' });
+      // res.status(201).json({ message: 'User registered successfully' });
+      res.success()
+    });
+  });
+})
+
+// 登出
+router.post('/logout', (req, res, next) => {
+  // 返回成功的响应
+  res.success({});
+})
+
+// 获取用户列表
+router.get('/getUserList', (req, res, next) => {
+  // console.log('user', req.user)
+  const sql = 'SELECT * FROM users';
+  db.query(sql, (err, result) => {
+    if (err) {
+      // console.error('Error fetching users:', err.stack);
+      return res.error('Error fetching users:', 500);;
+    }
+    // res.json(result);
+    res.success(result);
+  })
+})
+
+// 更新密码（邮件）
+// 设置邮件发送
+// const transporter = nodemailer.createTransport({
+//   service: 'gmail',
+//   auth: {
+//     user: 'your_email@gmail.com',
+//     pass: 'your_email_password'
+//   }
+// });
+// router.post('/resetPassowrd',(req, res) => {
+  // const { email } = req.body;
+  // 查找用户
+  // const sql = 'SELECT id FROM users WHERE email = ?';
+  // db.query(sql, [email], (err, results) => {
+  //   if (err) {
+  //     return res.error('Database error', 500);
+  //   }
+
+  //   if (results.length === 0) {
+  //     return res.error('User not found', 404);
+  //   }
+
+  //   const user = results[0]
+    // const resetToken = jwt.sign({ id: user.id }, resetTokenSecretKey, { expiresIn: '15m' }); // 令牌有效期15分钟
+    // // 构建重置密码链接
+    // const resetLink = `http://yourdomain.com/reset-password/${resetToken}`;
+
+    // // 发送邮件
+    // const mailOptions = {
+    //   from: 'your_email@gmail.com',
+    //   to: email,
+    //   subject: 'Password Reset',
+    //   text: `Click the following link to reset your password: ${resetLink}`
+    // };
+
+    // transporter.sendMail(mailOptions, (error, info) => {
+    //   if (error) {
+    //     return res.error('Error sending email', 500);
+    //   }
+    //   res.success({}, 'Password reset link has been sent to your email.');
+    // });
+//   })
+// })
+
+// 重置密码
+// router.post('/api/reset-password/:token', (req, res) => {
+//   const { token } = req.params;
+//   const { newPassword } = req.body;
+
+//   // 验证 token
+//   jwt.verify(token, resetTokenSecretKey, (err, decoded) => {
+//     if (err) {
+//       return res.error('Invalid or expired token', 400);
+//     }
+
+//     const userId = decoded.id;
+
+//     // 哈希新密码
+//     bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+//       if (err) {
+//         return res.error('Error hashing password', 500);
+//       }
+
+//       // 更新密码
+//       const sql = 'UPDATE users SET password = ? WHERE id = ?';
+//       db.query(sql, [hashedPassword, userId], (err, result) => {
+//         if (err) {
+//           return res.error('Database error', 500);
+//         }
+
+//         res.success({}, 'Password has been reset successfully.');
+//       });
+//     });
+//   });
+// });
+
+router.post('/resetPassword',(req, res, next) => {
+  const { username } = req.body
+  const sql = 'SELECT id FROM users WHERE username = ?'
+  db.query(sql, [username], (err, results) => {
+    if (err) {
+      return res.error('Database error', 500);
+    }
+
+    if (results.length === 0) {
+      return res.error('User not found', 404);
+    }
+
+    const user = results[0];
+    const resetToken = jwt.sign({ id: user.id }, resetTokenSecretKey, { expiresIn: '15m' }); // 令牌有效期15分钟
+    // 构建重置密码链接
+    const resetLink = `http://yourdomain.com/resetPassword/${resetToken}`;
+    res.json(resetLink)
+
+  })
+})
+
+router.post('/resetPassword/:token', (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  // 验证 token
+  jwt.verify(token, resetTokenSecretKey, (err, decoded) => {
+    if (err) {
+      return res.error('Invalid or expired token', 400);
+    }
+
+    const userId = decoded.id;
+
+    // 哈希新密码
+    bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+      if (err) {
+        return res.error('Error hashing password', 500);
+      }
+
+      // 更新密码
+      const sql = 'UPDATE users SET password = ? WHERE id = ?';
+      db.query(sql, [hashedPassword, userId], (err, result) => {
+        if (err) {
+          return res.error('Database error', 500);
+        }
+
+        res.success({});
+      });
     });
   });
 })

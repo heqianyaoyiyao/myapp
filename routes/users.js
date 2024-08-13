@@ -223,6 +223,7 @@ router.get('/getUserList', (req, res, next) => {
 //   });
 // });
 
+// 重置密码链接
 router.post('/resetPassword',(req, res, next) => {
   const { username } = req.body
   const sql = 'SELECT id FROM users WHERE username = ?'
@@ -238,12 +239,12 @@ router.post('/resetPassword',(req, res, next) => {
     const user = results[0];
     const resetToken = jwt.sign({ id: user.id }, resetTokenSecretKey, { expiresIn: '15m' }); // 令牌有效期15分钟
     // 构建重置密码链接
-    const resetLink = `http://yourdomain.com/resetPassword/${resetToken}`;
+    const resetLink = `http://47.107.28.73:2333/resetPassword/${resetToken}`;
     res.json(resetLink)
-
   })
 })
 
+// 重置密码
 router.post('/resetPassword/:token', (req, res) => {
   const { token } = req.params;
   const { newPassword } = req.body;

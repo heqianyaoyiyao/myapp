@@ -57,11 +57,8 @@ function skipTokenVerification(req, res, next) {
     return next();
   }
 
-  // 正则表达式匹配 '/users/resetPassword/:token' 路径
-  const excludedRoutes = /^\/users\/resetPassword\/[^/]+$/;
-
-  // 如果当前请求路径匹配排除的路由，则跳过中间件
-  if (excludedRoutes.test(req.path)) {
+  // 如果当前请求路径是resetPassword开头，则跳过中间件
+  if (req.path.startsWith('/users/resetPassword')) {
     return next();
   }
   

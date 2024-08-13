@@ -7,7 +7,7 @@ const { loginSubmit, getPath } = require('../until/user')
 
 const crypto = require('crypto');
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { secretKey, resetTokenSecretKey } = require('./config')
 const jwt = require('jsonwebtoken');
 
@@ -224,8 +224,8 @@ router.get('/getUserList', (req, res, next) => {
 // });
 
 // 重置密码链接
-router.post('/resetPassword',(req, res, next) => {
-  const { username } = req.body
+router.get('/getResetPasswordToken',(req, res, next) => {
+  const { username } = req.query
   const sql = 'SELECT id FROM users WHERE username = ?'
   db.query(sql, [username], (err, results) => {
     if (err) {
@@ -239,18 +239,18 @@ router.post('/resetPassword',(req, res, next) => {
     const user = results[0];
     const resetToken = jwt.sign({ id: user.id }, resetTokenSecretKey, { expiresIn: '15m' }); // 令牌有效期15分钟
     // 构建重置密码链接
-    const resetLink = `http://47.107.28.73:2333/resetPassword/${resetToken}`;
-    res.json(resetLink)
+    // const resetLink = `http://47.107.28.73:2333/resetPassword/${resetToken}`;
+
+    res.success(resetToken)
   })
 })
 
 // 重置密码
-router.post('/resetPassword/:token', (req, res) => {
-  const { token } = req.params;
-  const { newPassword } = req.body;
+router.post('/resetPassword', (req, res) => {
+  const { resetToken, newPassword } = req.body;
 
   // 验证 token
-  jwt.verify(token, resetTokenSecretKey, (err, decoded) => {
+  jwt.verify(resetToken, resetTokenSecretKey, (err, decoded) => {
     if (err) {
       return res.error('Invalid or expired token', 400);
     }
@@ -274,6 +274,11 @@ router.post('/resetPassword/:token', (req, res) => {
       });
     });
   });
+})
+
+// 检查token是否有效
+router.get('/checkToken', (req, res) => {
+  res.success({});
 })
 
 module.exports = router;

@@ -35,12 +35,14 @@ function verifyToken(req, res, next) {
   const token = req.headers['authorization'];
 
   if (!token) {
-    return res.status(403).json({ message: 'Token required' });
+    // return res.status(403).json({ message: 'Token required' });
+    return res.error('Token required', 403)
   }
 
   jwt.verify(token, secretKey, (err, decoded) => {
     if (err) {
-      return res.status(403).json({ message: 'Invalid or expired token' });
+      // return res.status(403).json({ message: 'Invalid or expired token' });
+      return res.error('Invalid or expired token', 403)
     }
 
     req.user = decoded; // 将解码后的用户信息存入请求对象

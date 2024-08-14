@@ -8,11 +8,11 @@ function loginSubmit(params = {}) {
   })
 }
 
-function getPath(params = {}) {
+function getPath(data = {}) {
   return fetch({
     url: '/index.php?explorer/list',
     method: 'post',
-    params
+    data
   })
 }
 

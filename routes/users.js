@@ -67,7 +67,7 @@ router.post('/login', (req, res) => {
 
     if (results.length === 0) {
       // return res.status(401).json({ message: 'User not found' });
-      return res.error('User not found', 401);
+      return res.error('用户不存在', 401);
     }
 
     const user = results[0];
@@ -76,7 +76,7 @@ router.post('/login', (req, res) => {
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       // return res.status(401).json({ message: 'Incorrect password' });
-      return res.error('Incorrect password', 401);
+      return res.error('密码错误', 401);
     }
 
     // 生成JWT Token，设置过期时间为1小时
@@ -106,7 +106,7 @@ router.post('/regist', async(req, res) => {
 
     if (results.length > 0) {
       // return res.status(409).json({ message: 'User already exists' });
-      return res.error('User already exists', 409)
+      return res.error('用户已存在', 409)
     }
 
     // 加密密码
@@ -233,7 +233,7 @@ router.get('/getResetPasswordToken',(req, res, next) => {
     }
 
     if (results.length === 0) {
-      return res.error('User not found', 404);
+      return res.error('用户不存在', 404);
     }
 
     const user = results[0];

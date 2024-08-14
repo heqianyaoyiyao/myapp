@@ -55,7 +55,7 @@ function skipTokenVerification(req, res, next) {
   console.log(req.path)
   // 如果请求路径是这些，直接跳过 verifyToken 验证
   console.log(req.path)
-  if (req.path === '/users/login' || req.path === '/users/regist' || req.path.startsWith('/public')) {
+  if (req.path === '/users/login' || req.path === '/users/regist' || req.path === '/users/getResetPasswordToken' || req.path.startsWith('/public')) {
     return next();
   }
 

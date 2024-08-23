@@ -289,4 +289,14 @@ router.get('/checkToken', (req, res) => {
   res.success({});
 })
 
+// 删除用户
+router.post('/delUser', (req, res) => {
+  const { userId } = req.body
+  const sql = 'DELETE FROM users WHERE id = ?'
+  db.query(sql, [userId], (error, results) => {
+    if (error) throw error
+    res.success()
+  })
+})
+
 module.exports = router;

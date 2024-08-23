@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+const fileRouter = require('./routes/file')
 
 // const cors = require('cors');
 const responseMiddleware = require('./middleware/responseMiddleware');
@@ -35,6 +36,7 @@ app.use(skipTokenVerificationMiddleware);
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/file', fileRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

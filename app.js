@@ -9,7 +9,8 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 // const cors = require('cors');
-const responseMiddleware = require('./until/responseMiddleware');
+const responseMiddleware = require('./middleware/responseMiddleware');
+const skipTokenVerificationMiddleware = require('./middleware/tokenVerification')
 
 var app = express();
 
@@ -26,48 +27,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());//数据JSON类型
 app.use(bodyParser.urlencoded({ extended: false }));//解析post请求数据
 
-const { secretKey } = require('./routes/config')
-const jwt = require('jsonwebtoken');
+// 应用全局中间件 格式化响应数据
 app.use(responseMiddleware);
 
-// 验证Token的中间件
-function verifyToken(req, res, next) {
-  const token = req.headers['authorization'];
-
-  if (!token) {
-    // return res.status(403).json({ message: 'Token required' });
-    return res.error('Token required', 403)
-  }
-
-  jwt.verify(token, secretKey, (err, decoded) => {
-    if (err) {
-      // return res.status(403).json({ message: 'Invalid or expired token' });
-      return res.error('Invalid or expired token', 403)
-    }
-
-    req.user = decoded; // 将解码后的用户信息存入请求对象
-    next();
-  });
-}
-
-// 排除特定路由的中间件
-function skipTokenVerification(req, res, next) {
-  // 如果请求路径是这些，直接跳过 verifyToken 验证
-  if (req.path === '/users/login' || req.path === '/users/regist' || req.path === '/users/getResetPasswordToken' || req.path.startsWith('/public')) {
-    return next();
-  }
-
-  // 如果当前请求路径是resetPassword开头，则跳过中间件
-  if (req.path.startsWith('/users/resetPassword')) {
-    return next();
-  }
-  
-  // 其他路径则进行Token验证
-  verifyToken(req, res, next);
-}
-
 // 应用全局中间件（包括Token验证）
-app.use(skipTokenVerification);
+app.use(skipTokenVerificationMiddleware);
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

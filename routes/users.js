@@ -1,5 +1,5 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 // var axios = require('axios')
 const db = require('../sql/connectDB')
 
@@ -79,7 +79,7 @@ router.post('/login', (req, res) => {
       return res.error('密码错误', 401);
     }
 
-    // 生成JWT Token，设置过期时间为1小时
+    // 生成JWT Token，设置过期时间为6小时
     const token = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: '6h' });
 
     // 返回用户信息和令牌
@@ -143,7 +143,15 @@ router.get('/getUserList', (req, res, next) => {
       return res.error('Error fetching users:', 500);;
     }
     // res.json(result);
-    res.success(result);
+    const data = result.map((item) => {
+      return {
+        id: item.id,
+        username: item.username,
+        user_auth: item.user_auth,
+        avatarUrl: item.avatarUrl
+      }
+    })
+    res.success(data);
   })
 })
 

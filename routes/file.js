@@ -7,7 +7,7 @@ const path = require('path');
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     // 设置上传文件的保存路径
-    cb(null, 'tmp/');
+    cb(null, 'public/tmp/');
   },
   filename: function (req, file, cb) {
     // 设置上传文件的名称
@@ -23,7 +23,8 @@ router.post('/upload', upload.single('file'), (req, res) => {
   try {
     res.success({
       filename: req.file.filename,
-      path: req.file.path,
+      // path: req.file.path,
+      path: `/tmp/${req.file.filename}`,
       originalname: req.file.originalname,
       size: req.file.size
     })

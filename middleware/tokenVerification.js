@@ -23,9 +23,10 @@ function verifyToken(req, res, next) {
 }
 
 // 排除特定路由的中间件
+const excludeRouter = ['/users/login', '/users/regist', '/users/getResetPasswordToken', '/users']
 function skipTokenVerification(req, res, next) {
   // 如果请求路径是这些，直接跳过 verifyToken 验证
-  if (req.path === '/users/login' || req.path === '/users/regist' || req.path === '/users/getResetPasswordToken' || req.path.startsWith('/public')) {
+  if (excludeRouter.includes(req.path)) {
     return next();
   }
 

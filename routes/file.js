@@ -7,26 +7,26 @@ const fs = require('fs');
 // 设置存储文件的配置
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const directoryPath = path.join(__dirname, '../public/tmp/'+req.user.id);
+    const directoryPath = path.join(__dirname, '../public/tmp/'+req.user.id)
     // 检查文件夹是否存在，如果不存在则创建
     if (!fs.existsSync(directoryPath)) {
       try {
-        fs.mkdirSync(directoryPath, { recursive: true });
+        fs.mkdirSync(directoryPath, { recursive: true })
       } catch (error) {
-        console.error(`Error creating directory: ${error.message}`);
+        console.error(`Error creating directory: ${error.message}`)
       }
     }
-    cb(null, `public/tmp/${req.user.id}/`);
+    cb(null, `public/tmp/${req.user.id}/`)
   },
   filename: function (req, file, cb) {
     // 设置上传文件的名称
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
   }
-});
+})
 
 // 初始化 multer 中间件
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage })
 
 router.post('/upload', upload.single('file'), (req, res) => {
   try {

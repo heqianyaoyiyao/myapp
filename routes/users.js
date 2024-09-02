@@ -136,22 +136,35 @@ router.post('/logout', (req, res, next) => {
 // 获取用户列表
 router.get('/getUserList', (req, res, next) => {
   // console.log('user', req.user)
-  const sql = 'SELECT * FROM users';
-  db.query(sql, (err, result) => {
-    if (err) {
-      // console.error('Error fetching users:', err.stack);
-      return res.error('Error fetching users:', 500);;
+  const { page = 1, pageSize = 10 } = req.body
+
+  // 获取总记录数的查询
+  const totalQuery = 'SELECT COUNT(*) AS total FROM users'
+  // 分页查询
+  const offset = (page - 1) * pageSize
+  const sql = `SELECT * FROM users LIMIT ? OFFSET ?`
+
+  db.query(totalQuery, (totalError, totalResults) => {
+    if (totalError) {
+      return res.error('Error fetching users:', 500)
     }
-    // res.json(result);
-    const data = result.map((item) => {
-      return {
-        id: item.id,
-        username: item.username,
-        user_auth: item.user_auth,
-        avatarUrl: item.avatarUrl
+    // 获取总记录数
+    const total = totalResults[0].total
+
+    db.query(sql,[pageSize, offset], (err, result) => {
+      if (err) {
+        return res.error('Error fetching users:', 500)
       }
+      const data = result.map((item) => {
+        return {
+          id: item.id,
+          username: item.username,
+          user_auth: item.user_auth,
+          avatarUrl: item.avatarUrl
+        }
+      })
+      res.success({ total, list: data })
     })
-    res.success(data);
   })
 })
 

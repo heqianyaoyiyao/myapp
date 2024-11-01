@@ -1,9 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+// const express = require('express');
+// const multer = require('multer');
+// const path = require('path');
+// const fs = require('fs');
 
+import express from 'express'
+import multer from 'multer'
+import path from 'path'
+import fs from 'fs'
+
+const router = express.Router();
 // 设置存储文件的配置
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -86,4 +91,5 @@ router.get('/getFiles', async (req, res) => {
   res.success(files)
 })
 
-module.exports = router
+// module.exports = router
+export default router

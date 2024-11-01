@@ -2,4 +2,8 @@
 const secretKey = 'qq123456'
 const resetTokenSecretKey = 'qwaszx12';
 
-module.exports = { secretKey, resetTokenSecretKey }
+// module.exports = { secretKey, resetTokenSecretKey }
+export {
+  secretKey,
+  resetTokenSecretKey
+}

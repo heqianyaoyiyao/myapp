@@ -1,5 +1,7 @@
-const fs = require('fs');
-const path = require('path');
+// const fs = require('fs');
+// const path = require('path');
+import fs from 'fs'
+import path from 'path'
 
 // 要创建的文件夹路径
 const directoryPath = path.join(__dirname, '../public/tmp/newFolder');

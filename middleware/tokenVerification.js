@@ -1,6 +1,8 @@
 
-const jwt = require('jsonwebtoken');
-const { secretKey } = require('../routes/config')
+import jwt from 'jsonwebtoken'
+import { secretKey } from '../routes/config.js'
+// const jwt = require('jsonwebtoken');
+// const { secretKey } = require('../routes/config')
 
 // 验证Token的中间件
 function verifyToken(req, res, next) {
@@ -23,20 +25,21 @@ function verifyToken(req, res, next) {
 }
 
 // 排除特定路由的中间件
-const excludeRouter = ['/users/login', '/users/regist', '/users/getResetPasswordToken', '/users']
+const excludeRouters = ['/users/login', '/users/regist', '/users/getResetPasswordToken', '/users/resetPassword', '/users']
 function skipTokenVerification(req, res, next) {
   // 如果请求路径是这些，直接跳过 verifyToken 验证
-  if (excludeRouter.includes(req.path)) {
-    return next();
+  if (excludeRouters.includes(req.path)) {
+    return next()
   }
 
-  // 如果当前请求路径是resetPassword开头，则跳过中间件
-  if (req.path.startsWith('/users/resetPassword')) {
-    return next();
-  }
+  // 如果当前请求路径是tmp开头，则跳过中间件
+  // if (req.path.startsWith('/tmp')) {
+  //   return next();
+  // }
   
   // 其他路径则进行Token验证
-  verifyToken(req, res, next);
+  verifyToken(req, res, next)
 }
 
-module.exports = skipTokenVerification;
+// module.exports = skipTokenVerification;
+export default skipTokenVerification

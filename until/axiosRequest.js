@@ -1,4 +1,5 @@
-const axios = require('axios')
+// const axios = require('axios')
+import axios from "axios"
 
 const serverAddress = 'http://stage.ezkit.net:12180/'
 const instanceAxios = axios.create()
@@ -21,4 +22,5 @@ const fetch = async ({
   }
 }
 
-module.exports = fetch;
+// module.exports = fetch;
+export default fetch

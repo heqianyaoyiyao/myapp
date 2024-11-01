@@ -1,15 +1,23 @@
-const express = require('express');
-const router = express.Router();
-// var axios = require('axios')
-const db = require('../sql/connectDB')
+// const express = require('express')
+// // var axios = require('axios')
+// const db = require('../sql/connectDB')
+// const { loginSubmit, getPath } = require('../until/user')
+// const { secretKey, resetTokenSecretKey } = require('./config')
 
-const { loginSubmit, getPath } = require('../until/user')
+import express from 'express'
+import db from '../sql/connectDB.js'
+import { loginSubmit, getPath } from '../until/user.js'
+import { secretKey, resetTokenSecretKey } from './config.js'
 
-const crypto = require('crypto');
+// const crypto = require('crypto')
+// const bcrypt = require('bcryptjs')
+// const router = express.Router()
+// const jwt = require('jsonwebtoken')
+import crypto from 'crypto'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 
-const bcrypt = require('bcryptjs');
-const { secretKey, resetTokenSecretKey } = require('./config')
-const jwt = require('jsonwebtoken');
+const router = express.Router()
 
 // var serverAddress = 'http://stage.ezkit.net:12180'
 // http://server/?user/index/loginSubmit&name=[用户名]&password=[密码]
@@ -18,8 +26,8 @@ const jwt = require('jsonwebtoken');
 //     密码：xpUtOcLH
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  res.send('respond with a resource -- users');
-});
+  res.send('respond with a resource -- users')
+})
 
 // router.get('/login',function(req, res, next) {
 //   const query = {
@@ -55,49 +63,48 @@ router.get('/', function(req, res, next) {
 
 // 登录路由
 router.post('/login', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body
 
   // 检查用户是否存在
   const query = 'SELECT * FROM users WHERE username = ?';
   db.query(query, [username], async (err, results) => {
     if (err) {
       // return res.status(500).json({ message: 'Database error' });
-      return res.error('Database error', 500);
+      return res.error('Database error', 500)
     }
 
     if (results.length === 0) {
       // return res.status(401).json({ message: 'User not found' });
-      return res.error('用户不存在', 401);
+      return res.error('用户不存在', 401)
     }
 
-    const user = results[0];
+    const user = results[0]
 
     // 验证密码
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user.password)
     if (!passwordMatch) {
       // return res.status(401).json({ message: 'Incorrect password' });
-      return res.error('密码错误', 401);
+      return res.error('密码错误', 401)
     }
 
     // 生成JWT Token，设置过期时间为6小时
-    const token = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: '6h' });
+    const token = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: '6h' })
 
     // 返回用户信息和令牌
     const userData = {
       id: user.id,
       username: user.username
-    };
-    // res.json({ message: 'Login successful', token });
-    res.success({ user: userData, token: token });
-  });
-});
+    }
+    res.success({ user: userData, token: token })
+  })
+})
 
 // 注册
 router.post('/regist', async(req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body
 
   // 检查用户是否已存在
-  const checkUserQuery = 'SELECT * FROM users WHERE username = ?';
+  const checkUserQuery = 'SELECT * FROM users WHERE username = ?'
   db.query(checkUserQuery, [username], async (err, results) => {
     if (err) {
       // return res.status(500).json({ message: 'Database error' });
@@ -105,32 +112,32 @@ router.post('/regist', async(req, res) => {
     }
 
     if (results.length > 0) {
-      // return res.status(409).json({ message: 'User already exists' });
+      // return res.status(409).json({ message: 'User already exists' })
       return res.error('用户已存在', 409)
     }
 
     // 加密密码
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const saltRounds = 10
+    const hashedPassword = await bcrypt.hash(password, saltRounds)
 
     // 插入新用户
-    const insertUserQuery = 'INSERT INTO users (username, password) VALUES (?, ?)';
+    const insertUserQuery = 'INSERT INTO users (username, password) VALUES (?, ?)'
     db.query(insertUserQuery, [username, hashedPassword], (err, results) => {
       if (err) {
-        // return res.status(500).json({ message: 'Database error' });
+        // return res.status(500).json({ message: 'Database error' })
         return res.error('Database error', 500)
       }
 
-      // res.status(201).json({ message: 'User registered successfully' });
+      // res.status(201).json({ message: 'User registered successfully' })
       res.success()
-    });
-  });
+    })
+  })
 })
 
 // 登出
 router.post('/logout', (req, res, next) => {
   // 返回成功的响应
-  res.success({});
+  res.success({})
 })
 
 // 获取用户列表
@@ -250,17 +257,17 @@ router.get('/getResetPasswordToken',(req, res, next) => {
   const sql = 'SELECT id FROM users WHERE username = ?'
   db.query(sql, [username], (err, results) => {
     if (err) {
-      return res.error('Database error', 500);
+      return res.error('Database error', 500)
     }
 
     if (results.length === 0) {
-      return res.error('用户不存在', 404);
+      return res.error('用户不存在', 404)
     }
 
-    const user = results[0];
-    const resetToken = jwt.sign({ id: user.id }, resetTokenSecretKey, { expiresIn: '15m' }); // 令牌有效期15分钟
+    const user = results[0]
+    const resetToken = jwt.sign({ id: user.id }, resetTokenSecretKey, { expiresIn: '15m' }) // 令牌有效期15分钟
     // 构建重置密码链接
-    // const resetLink = `http://47.107.28.73:2333/resetPassword/${resetToken}`;
+    // const resetLink = `http://47.107.28.73:2333/resetPassword/${resetToken}`
 
     res.success(resetToken)
   })
@@ -268,38 +275,38 @@ router.get('/getResetPasswordToken',(req, res, next) => {
 
 // 重置密码
 router.post('/resetPassword', (req, res) => {
-  const { resetToken, newPassword } = req.body;
+  const { resetToken, newPassword } = req.body
 
   // 验证 token
   jwt.verify(resetToken, resetTokenSecretKey, (err, decoded) => {
     if (err) {
-      return res.error('Invalid or expired token', 400);
+      return res.error('Invalid or expired token', 400)
     }
 
-    const userId = decoded.id;
+    const userId = decoded.id
 
     // 哈希新密码
     bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
       if (err) {
-        return res.error('Error hashing password', 500);
+        return res.error('Error hashing password', 500)
       }
 
       // 更新密码
-      const sql = 'UPDATE users SET password = ? WHERE id = ?';
+      const sql = 'UPDATE users SET password = ? WHERE id = ?'
       db.query(sql, [hashedPassword, userId], (err, result) => {
         if (err) {
-          return res.error('Database error', 500);
+          return res.error('Database error', 500)
         }
 
-        res.success({});
-      });
-    });
-  });
+        res.success({})
+      })
+    })
+  })
 })
 
 // 检查token是否有效
 router.get('/checkToken', (req, res) => {
-  res.success({});
+  res.success({})
 })
 
 // 删除用户
@@ -312,4 +319,5 @@ router.post('/delUser', (req, res) => {
   })
 })
 
-module.exports = router;
+// module.exports = router
+export default router

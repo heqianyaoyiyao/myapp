@@ -1,4 +1,5 @@
-const fetch = require('./axiosRequest')
+// const fetch = require('./axiosRequest')
+import fetch from './axiosRequest.js'
 
 function loginSubmit(params = {}) {
   return fetch({
@@ -16,4 +17,5 @@ function getPath(data = {}) {
   })
 }
 
-module.exports = { loginSubmit, getPath };
+// module.exports = { loginSubmit, getPath };
+export { loginSubmit, getPath }

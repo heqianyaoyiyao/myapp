@@ -30,4 +30,5 @@ function responseMiddleware(req, res, next) {
   next();
 }
 
-module.exports = responseMiddleware;
+// module.exports = responseMiddleware;
+export default responseMiddleware

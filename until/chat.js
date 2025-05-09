@@ -4,25 +4,58 @@
 // const rl = readline.createInterface({ input, output })
 
 import OpenAI from "openai";
-import { createInterface } from 'readline/promises';
-import { apiKey, baseURL } from './config.js'
+import { createInterface } from "readline/promises";
+import { apiKey, baseURL } from "./config.js";
 
 const openai = new OpenAI({
-    apiKey: apiKey,
-    baseURL: baseURL
+  apiKey: apiKey,
+  baseURL: baseURL,
 });
 
 async function getResponse(messages) {
-    try {
-        const completion = await openai.chat.completions.create({
-            model: "qwen-plus",
-            messages: messages,
-        });
-        return completion.choices[0].message.content;
-    } catch (error) {
-        // console.error("Error fetching response:", error);
-        throw error;  // 重新抛出异常以便上层处理
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "qwen-plus-2025-01-25",
+      messages: messages,
+      // stream: true,
+    });
+    console.log(completion);
+    // let fullContent = "";
+    // console.log("流式输出内容为：")
+    // console.log(completion)
+    // for await (const chunk of completion) {
+    //     fullContent = fullContent + chunk.choices[0].delta.content;
+    //     console.log(chunk.choices[0].delta.content);
+    // }
+    // console.log("\n完整内容为：")
+    // console.log(fullContent);
+    return completion.choices[0].message.content;
+  } catch (error) {
+    // console.error("Error fetching response:", error);
+    throw error; // 重新抛出异常以便上层处理
+  }
+}
+
+async function getResponseSSE(messages, onData) {
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "qwen-plus-2025-04-28",
+      messages: messages,
+      stream: true,
+      enable_search: true,
+    });
+
+    // 处理流式数据
+    for await (const chunk of completion) {
+      const content = chunk.choices[0].delta.content;
+      if (content) {
+        onData(content); // 调用回调函数处理每一块数据
+      }
     }
+  } catch (error) {
+    console.error("Error fetching response:", error);
+    throw error; // 重新抛出异常以便上层处理
+  }
 }
 
 // 初始化 messages
@@ -36,7 +69,6 @@ async function getResponse(messages) {
 
 // let assistant_output = "欢迎光临百炼手机商店，您需要购买什么尺寸的手机呢？";
 // console.log(assistant_output);
-
 
 // const readline = createInterface({
 //     input: process.stdin,
@@ -60,6 +92,4 @@ async function getResponse(messages) {
 //     readline.close();
 // })();
 
-export {
-  getResponse
-}
+export { getResponse, getResponseSSE };

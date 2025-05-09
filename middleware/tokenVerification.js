@@ -25,7 +25,7 @@ function verifyToken(req, res, next) {
 }
 
 // 排除特定路由的中间件
-const excludeRouters = ['/users/login', '/users/regist', '/users/getResetPasswordToken', '/users/resetPassword', '/users']
+const excludeRouters = ['/users/login', '/users/regist', '/users/getResetPasswordToken', '/users/resetPassword', '/users', '/chat/questionStream', '/chat/getAnswer']
 function skipTokenVerification(req, res, next) {
   // 如果请求路径是这些，直接跳过 verifyToken 验证
   if (excludeRouters.includes(req.path)) {

@@ -1,12 +1,12 @@
-// const express = require('express');
-// const multer = require('multer');
-// const path = require('path');
-// const fs = require('fs');
-
 import express from 'express'
 import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
+import { fileURLToPath } from 'url';
+
+// 定义 __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 // 设置存储文件的配置
@@ -38,7 +38,7 @@ router.post('/upload', upload.single('file'), (req, res) => {
     res.success({
       filename: req.file.filename,
       // path: req.file.path,
-      path: `/tmp/${req.file.filename}`,
+      path: `/tmp/${req.user.id}/${req.file.filename}`,
       originalname: req.file.originalname,
       size: req.file.size
     })
